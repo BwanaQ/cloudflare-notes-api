@@ -4,7 +4,9 @@ name: Deploy API Docs
   push:
     branches:
       - master
-
+    paths:
+      - "docs/**"
+      - "openapi.yaml"
 
 jobs:
 
