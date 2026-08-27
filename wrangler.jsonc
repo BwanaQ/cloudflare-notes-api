@@ -17,6 +17,12 @@
 			"database_name": "notes-db",
 			"database_id": "89a211e1-6515-4f0a-a052-c84ebe15b1d6"
 		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "NOTES_CACHE",
+			"id": "c6725f4fec2e4864922feddc38b8c496"
+		}
 	]
 	/**
 	 * Smart Placement
