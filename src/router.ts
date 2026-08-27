@@ -1,6 +1,7 @@
 import { healthController } from "./controllers/health";
+import { createNote, getNotes } from "./controllers/notes";
 
-export function router(request: Request): Response {
+export async function router(request: Request, env:Env): Promise<Response> {
 
   const url = new URL(request.url);
 
@@ -11,6 +12,21 @@ export function router(request: Request): Response {
     return healthController();
   }
 
+  if (
+    request.method === "POST" &&
+    url.pathname === "/api/notes"
+  ) {
+    return createNote(request, env);
+  }
+  
+  if (
+    request.method === "GET" &&
+    url.pathname === "/api/notes"
+  ) {
+    return getNotes(env);
+  }
+
+  
   return new Response(
     JSON.stringify({
       error: "Route not found",
