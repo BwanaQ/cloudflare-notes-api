@@ -1,38 +1,53 @@
+import { noteSchema } from "../validators/note";
+
+
 export async function createNote(
-  request: Request,
-  env: Env
+	request: Request,
+	env: Env
 ): Promise<Response> {
 
-  const body = await request.json<{
-    title: string;
-    content: string;
-  }>();
+	const body = await request.json();
 
-  const { title, content } = body;
+	const parsed = noteSchema.safeParse(body);
 
-  const result = await env.notes_db
-    .prepare(
-      `
-      INSERT INTO notes (title, content)
-      VALUES (?, ?)
-      RETURNING *
-      `
-    )
-    .bind(title, content)
-    .first();
+	if (!parsed.success) {
+		return new Response(
+			JSON.stringify({
+				error: parsed.error.flatten(),
+			}),
+			{
+				status: 400,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+		);
+	}
 
-    await env.NOTES_CACHE.delete("all_notes");
+	const { title, content } = parsed.data;
 
-  return new Response(
-    JSON.stringify(result),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      status: 201,
-    }
-  );
+	const result = await env.notes_db
+		.prepare(`
+			INSERT INTO notes (title, content)
+			VALUES (?, ?)
+			RETURNING *
+		`)
+		.bind(title, content)
+		.first();
+
+	await env.NOTES_CACHE.delete("all_notes");
+
+	return new Response(
+		JSON.stringify(result),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}
+	);
 }
+
 
 export async function getNotes(
   env: Env
@@ -186,75 +201,64 @@ export async function deleteNote(
 }
 
 export async function updateNote(
-  id: string,
-  request: Request,
-  env: Env
+	id: string,
+	request: Request,
+	env: Env
 ): Promise<Response> {
 
+	const body = await request.json();
 
-  const body = await request.json<{
-    title: string;
-    content: string;
-  }>();
+	const parsed = noteSchema.safeParse(body);
 
+	if (!parsed.success) {
+		return new Response(
+			JSON.stringify({
+				error: parsed.error.flatten(),
+			}),
+			{
+				status: 400,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+		);
+	}
 
-  const { title, content } = body;
+	const { title, content } = parsed.data;
 
+	const result = await env.notes_db
+		.prepare(`
+			UPDATE notes
+			SET title = ?, content = ?
+			WHERE id = ?
+			RETURNING *
+		`)
+		.bind(title, content, id)
+		.first();
 
+	if (!result) {
+		return new Response(
+			JSON.stringify({
+				error: "Note not found",
+			}),
+			{
+				status: 404,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+		);
+	}
 
-  const result =
-    await env.notes_db
-      .prepare(
-        `
-        UPDATE notes
-        SET title = ?, content = ?
-        WHERE id = ?
-        RETURNING *
-        `
-      )
-      .bind(
-        title,
-        content,
-        id
-      )
-      .first();
+	await env.NOTES_CACHE.delete("all_notes");
 
-
-
-  if (!result) {
-
-    return new Response(
-      JSON.stringify({
-        error:"Note not found"
-      }),
-      {
-        status:404,
-        headers:{
-          "Content-Type":"application/json"
-        }
-      }
-    );
-
-  }
-
-
-
-  // invalidate cache
-  await env.NOTES_CACHE.delete(
-    "all_notes"
-  );
-
-
-
-  return new Response(
-    JSON.stringify(result),
-    {
-      status:200,
-      headers:{
-        "Content-Type":"application/json"
-      }
-    }
-  );
-
+	return new Response(
+		JSON.stringify(result),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}
+	);
 }
-

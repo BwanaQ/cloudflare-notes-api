@@ -618,4 +618,102 @@ describe("Notes API Worker", () => {
 	});
 
 
+	it("rejects empty title", async () => {
+
+		const response = await request(
+			"/api/notes",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					title: "",
+					content: "Hello"
+				})
+			}
+		);
+	
+		expect(response.status).toBe(400);
+	
+	});
+
+
+	it("rejects missing content", async () => {
+
+		const response = await request(
+			"/api/notes",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					title: "Hello"
+				})
+			}
+		);
+	
+		expect(response.status).toBe(400);
+	
+	});
+
+
+	it("rejects empty content", async () => {
+
+		const response = await request(
+			"/api/notes",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					title: "Hello",
+					content: ""
+				})
+			}
+		);
+	
+		expect(response.status).toBe(400);
+	
+	});
+
+	it("rejects invalid update", async () => {
+
+		const create = await request(
+			"/api/notes",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					title: "A",
+					content: "B"
+				})
+			}
+		);
+	
+		const note = await create.json();
+	
+		const response = await request(
+			`/api/notes/${note.id}`,
+			{
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					title: "",
+					content: ""
+				})
+			}
+		);
+	
+		expect(response.status).toBe(400);
+	
+	});
+
+
 });
