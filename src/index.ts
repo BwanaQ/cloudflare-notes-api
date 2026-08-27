@@ -12,37 +12,10 @@
  */
 
 import { error } from "console";
+import { router } from "./router";
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const url = new URL(request.url);
-
-		if (url.pathname === "/api/health"){
-			return new Response(
-				JSON.stringify({
-					status: "ok",
-					service: "notes-api",
-					timestamp: new Date().toISOString(),
-				}),
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			);
-		}
-		
-		return new Response(
-			JSON.stringify({
-				error: "Route not found",
-			}),
-			{
-				status: 404,
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}
-		);
-
+		return router(request);
 	},
 } satisfies ExportedHandler<Env>;
