@@ -15,7 +15,8 @@
 		{
 			"binding": "notes_db",
 			"database_name": "notes-db",
-			"database_id": "89a211e1-6515-4f0a-a052-c84ebe15b1d6"
+			"database_id": "89a211e1-6515-4f0a-a052-c84ebe15b1d6",
+			"migrations_dir": "migrations"
 		}
 	],
 	"kv_namespaces": [
