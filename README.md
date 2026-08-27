@@ -4,6 +4,10 @@ A serverless CRUD API built with **Cloudflare Workers**, **Cloudflare D1**, and 
 
 The project demonstrates building a production-style API using Cloudflare's edge platform with automated testing through Vitest and GitHub Actions.
 
+
+📚 Interactive OpenAPI documentation:
+
+https://notes-api-docs.pages.dev/
 ---
 
 ## Features
