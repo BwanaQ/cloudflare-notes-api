@@ -11,8 +11,38 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import { error } from "console";
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response("Hello World!");
+		const url = new URL(request.url);
+
+		if (url.pathname === "/api/health"){
+			return new Response(
+				JSON.stringify({
+					status: "ok",
+					service: "notes-api",
+					timestamp: new Date().toISOString(),
+				}),
+				{
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
+		}
+		
+		return new Response(
+			JSON.stringify({
+				error: "Route not found",
+			}),
+			{
+				status: 404,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+		);
+
 	},
 } satisfies ExportedHandler<Env>;
