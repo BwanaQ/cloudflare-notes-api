@@ -1,0 +1,510 @@
+openapi: 3.0.3
+
+info:
+  title: Notes API
+  description: |
+    A Notes API built with Cloudflare Workers.
+
+    Features:
+    - Cloudflare D1 SQLite database
+    - Cloudflare KV caching
+    - Zod request validation
+    - RESTful CRUD operations
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://notes-api.hunja-notes.workers.dev
+    description: Production server
+
+
+tags:
+  - name: Health
+    description: Service health checks
+
+  - name: Notes
+    description: Notes CRUD operations
+
+
+paths:
+
+  /api/health:
+
+    get:
+      operationId: getHealthStatus
+
+      security: []
+
+      tags:
+        - Health
+
+      summary: Check API health
+
+      description:
+        Returns API health status.
+
+      responses:
+
+        "200":
+          description: API is healthy
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+
+        "404":
+          description: Route not found
+
+
+
+  /api/notes:
+
+
+    get:
+
+      operationId: getNotes
+
+      security: []
+
+      tags:
+        - Notes
+
+      summary: Get all notes
+
+      description:
+        Returns all notes.
+        Uses Cloudflare KV cache.
+
+      responses:
+
+        "200":
+
+          description: Notes returned successfully
+
+          content:
+
+            application/json:
+
+              schema:
+
+                type: array
+
+                items:
+
+                  $ref: "#/components/schemas/Note"
+
+
+        "400":
+
+          description: Bad request
+
+
+
+    post:
+
+      operationId: createNote
+
+      security: []
+
+      tags:
+        - Notes
+
+      summary: Create a note
+
+
+      requestBody:
+
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              $ref: "#/components/schemas/CreateNoteRequest"
+
+
+
+      responses:
+
+        "201":
+
+          description: Note created successfully
+
+          content:
+
+            application/json:
+
+              schema:
+
+                $ref: "#/components/schemas/Note"
+
+
+
+        "400":
+
+          description: Validation error
+
+          content:
+
+            application/json:
+
+              schema:
+
+                $ref: "#/components/schemas/Error"
+
+
+
+  /api/notes/{id}:
+
+
+    parameters:
+
+      - name: id
+
+        in: path
+
+        required: true
+
+        description: Note ID
+
+        schema:
+
+          type: integer
+
+          example: 1
+
+
+
+    get:
+
+      operationId: getNoteById
+
+      security: []
+
+      tags:
+
+        - Notes
+
+
+      summary: Get note by ID
+
+
+      responses:
+
+
+        "200":
+
+          description: Note found
+
+
+          content:
+
+            application/json:
+
+              schema:
+
+                $ref: "#/components/schemas/Note"
+
+
+
+        "404":
+
+          description: Note not found
+
+
+          content:
+
+            application/json:
+
+              schema:
+
+                $ref: "#/components/schemas/Error"
+
+
+
+
+    put:
+
+
+      operationId: updateNote
+
+
+      security: []
+
+
+      tags:
+
+        - Notes
+
+
+      summary: Update an existing note
+
+
+
+      requestBody:
+
+
+        required: true
+
+
+        content:
+
+
+          application/json:
+
+
+            schema:
+
+
+              $ref: "#/components/schemas/CreateNoteRequest"
+
+
+
+
+      responses:
+
+
+
+        "200":
+
+
+          description: Note updated successfully
+
+
+          content:
+
+
+            application/json:
+
+
+              schema:
+
+
+                $ref: "#/components/schemas/Note"
+
+
+
+
+        "400":
+
+
+          description: Validation error
+
+
+
+        "404":
+
+
+          description: Note not found
+
+
+
+    delete:
+
+
+      operationId: deleteNote
+
+
+      security: []
+
+
+      tags:
+
+
+        - Notes
+
+
+
+      summary: Delete a note
+
+
+
+      responses:
+
+
+
+        "200":
+
+
+          description: Note deleted successfully
+
+
+
+          content:
+
+
+            application/json:
+
+
+              schema:
+
+
+                type: object
+
+
+                properties:
+
+
+                  message:
+
+
+                    type: string
+
+
+                    example: Note deleted successfully
+
+
+
+
+
+        "404":
+
+
+          description: Note not found
+
+
+
+components:
+
+
+  schemas:
+
+
+
+    Note:
+
+
+      type: object
+
+
+      properties:
+
+
+        id:
+
+
+          type: integer
+
+
+          example: 1
+
+
+
+        title:
+
+
+          type: string
+
+
+          example: Shopping list
+
+
+
+        content:
+
+
+          type: string
+
+
+          example: Buy milk and bread
+
+
+
+        created_at:
+
+
+          type: string
+
+
+          example: "2026-08-27 11:08:06"
+
+
+
+
+    CreateNoteRequest:
+
+
+      type: object
+
+
+      required:
+
+
+        - title
+
+
+        - content
+
+
+
+      properties:
+
+
+
+        title:
+
+
+          type: string
+
+
+          maxLength: 255
+
+
+          example: Shopping list
+
+
+
+
+        content:
+
+
+          type: string
+
+
+          example: Buy milk and bread
+
+
+
+
+    Error:
+
+
+
+      type: object
+
+
+
+      properties:
+
+
+
+        error:
+
+
+
+          type: object
+
+
+
+          example:
+
+
+            formErrors: []
+
+
+            fieldErrors:
+
+
+              title:
+
+                - Title is required
